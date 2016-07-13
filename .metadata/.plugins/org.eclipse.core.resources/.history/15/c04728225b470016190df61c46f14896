@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:batch="http://www.springframework.org/schema/batch" 
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch
+	http://www.springframework.org/schema/batch/spring-batch-2.2.xsd
+	http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+		http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.2.xsd
+	http://www.springframework.org/schema/task
+       http://www.springframework.org/schema/task/spring-task-3.2.xsd ">
+  
+   <context:component-scan base-package="com.karola" />
+   
+   
+   
+    <!-- job context -->
+  <bean id="jobRepository"
+	class="org.springframework.batch.core.repository.support.MapJobRepositoryFactoryBean">
+	<property name="transactionManager" ref="transactionManager" />
+  </bean>
+
+  <bean id="transactionManager"
+	class="org.springframework.batch.support.transaction.ResourcelessTransactionManager" />
+
+  <bean id="jobLauncher"
+	class="org.springframework.batch.core.launch.support.SimpleJobLauncher">
+	<property name="jobRepository" ref="jobRepository" />
+  </bean>
+  <!-- job context -->
+   
+   
+   
+   
+  <bean id="report" class="com.karola.csv_mySQL.Report" scope="prototype" />
+ 
+  
+    <!-- old jobs
+   
+  <batch:job id="reportJob">
+	<batch:step id="step1" next="downloadCsv">
+	  <batch:tasklet>
+		<batch:chunk reader="cvsFileItemReader" writer="mysqlItemWriter"
+			commit-interval="2">
+		</batch:chunk>
+	  </batch:tasklet>
+	</batch:step>
+	<batch:step id="downloadCsv">
+		<batch:tasklet ref="fileDownloadingTasklet" />
+	</batch:step>
+  </batch:job>
+   -->
+   
+  
+  <batch:job id="downloadCsv">
+	<batch:step id="step1" next="reportJob">
+	 	<batch:tasklet ref="fileDownloadingTasklet" />
+	</batch:step>
+	<batch:step id="reportJob">
+	 <batch:tasklet>
+		<batch:chunk reader="cvsFileItemReader" writer="mysqlItemWriter"
+			commit-interval="2">
+		</batch:chunk>
+	  </batch:tasklet>
+	</batch:step>
+  </batch:job>
+
+
+ <bean id="fileDownloadingTasklet" class="com.karola.csv_mySQL.DownloadCSV" >
+	<property name="urlPart" value="cdr" />
+  </bean>
+	
+
+
+
+  <bean id="cvsFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+
+	<!-- Read a csv file -->
+	<property name="resource" value="classpath:csv/cdr.csv" />
+
+	<property name="lineMapper">
+		<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+		  <!-- split it -->
+		  <property name="lineTokenizer">
+		        <bean
+			  class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+				<property name="names" value="symbol,date,time,open,high,low,close,volume" />
+			</bean>
+		  </property>
+		  <property name="fieldSetMapper">   
+		         <!-- return back to reader, rather than a mapped object. -->
+		         <!--
+			 <bean class="org.springframework.batch.item.file.mapping.PassThroughFieldSetMapper" />
+		          --> 
+			  <!-- map to an object -->
+			  <bean
+			    class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+				<property name="prototypeBeanName" value="report" />
+			  </bean>			
+		  </property>
+
+		  </bean>
+	  </property>
+
+  </bean>
+
+  <bean id="mysqlItemWriter"
+	class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+	<property name="dataSource" ref="dataSource" />
+	<property name="sql">
+	  <value>
+            <![CDATA[        
+            	insert into CDR(SYMBOL,DATE,TIME,OPEN, HIGH, LOW, CLOSE, VOLUME) 
+			values (:symbol, :date, :time, :open, :high, :low, :close, :volume)
+            ]]>
+	  </value>
+	</property>
+	<!-- It will take care matching between object property and sql name parameter -->
+	<property name="itemSqlParameterSourceProvider">
+		<bean
+		class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider" />
+	</property>
+  </bean>
+  
+  
+   <bean id="runScheduler" class="com.karola.csv_mySQL.RunScheduler" />
+
+  <!-- Run every 5 seconds -->
+  <task:scheduled-tasks>
+    <!-- 
+	<task:scheduled ref="runScheduler" method="run" fixed-delay="5000" /> 
+    -->
+	<task:scheduled ref="runScheduler" method="run" cron="*/15 * * * * *" />
+   </task:scheduled-tasks>
+
+
+  
+
+</beans>

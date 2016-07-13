@@ -1,0 +1,52 @@
+package com.karola.csv_mySQL;
+
+public class Report {
+
+	public java.util.Date d;
+	private d Date;
+	private float Open;
+	private float High;
+	private float Low;
+	private float Close;
+	private int Volume;
+	
+	public String getDate() {
+		return Date;
+	}
+	public void setDate(String date) {
+		Date = date;
+	}
+	public float getOpen() {
+		return Open;
+	}
+	public void setOpen(float open) {
+		Open = open;
+	}
+	public float getHigh() {
+		return High;
+	}
+	public void setHigh(float high) {
+		High = high;
+	}
+	public float getLow() {
+		return Low;
+	}
+	public void setLow(float low) {
+		Low = low;
+	}
+	public float getClose() {
+		return Close;
+	}
+	public void setClose(float close) {
+		Close = close;
+	}
+	public int getVolume() {
+		return Volume;
+	}
+	public void setVolume(int volume) {
+		Volume = volume;
+	}
+	
+
+	
+}

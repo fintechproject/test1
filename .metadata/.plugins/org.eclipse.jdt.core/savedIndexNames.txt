@@ -1,0 +1,22 @@
+INDEX VERSION 1.127+/home/karola/EclipseProjects/CSV_MySQL/.metadata/.plugins/org.eclipse.jdt.core
+1493154478.index
+80968397.index
+1695825424.index
+2027160472.index
+2868328831.index
+769095591.index
+704329375.index
+3559500641.index
+753814054.index
+3278818951.index
+4120260636.index
+4215309698.index
+1035227836.index
+2159744653.index
+2160301561.index
+2927323132.index
+1061496096.index
+2905139623.index
+1066780415.index
+857285558.index
+3002405271.index
